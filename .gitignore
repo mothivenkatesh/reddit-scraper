@@ -1,0 +1,23 @@
+# Scraped output and workspace
+reddit-scrape/
+data/
+*.log
+all.csv
+targets.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/

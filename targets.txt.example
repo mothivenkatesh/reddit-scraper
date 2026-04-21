@@ -1,0 +1,13 @@
+# Mixed target list. One per line. Lines starting with # are ignored.
+# Rename to targets.txt and edit.
+
+# Users (submissions + comments)
+u/spez
+u/naval
+
+# Subreddits (feed, uses --sort from CLI, default "new")
+r/SaaS
+r/ProductManagement
+
+# Threads (full post + every comment)
+# https://www.reddit.com/r/startups/comments/abc123/some-title/
