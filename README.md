@@ -1,115 +1,176 @@
+<div align="center">
+
 # reddit-scraper
 
-Pulls content off Reddit fast. Users (their posts and comments), subreddit feeds, or whole threads with every comment. No login, no browser, no Reddit account needed. Uses Reddit's own public JSON endpoints, so it's fast and low risk.
+**Pull users, subreddits, and full threads from Reddit. No login, no browser, no API key. Just `pip install requests`.**
 
-Built for non-developers. Two setup commands and you're running.
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/mothivenkatesh/reddit-scraper?style=social)](https://github.com/mothivenkatesh/reddit-scraper/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/mothivenkatesh/reddit-scraper)](https://github.com/mothivenkatesh/reddit-scraper/commits)
+[![Issues](https://img.shields.io/github/issues/mothivenkatesh/reddit-scraper)](https://github.com/mothivenkatesh/reddit-scraper/issues)
 
-## What you can scrape
+**[Quickstart](#quickstart) · [Use cases](#what-you-can-do-with-it) · [Output](#sample-output) · [Compare](#how-it-compares) · [FAQ](#faq)**
 
-- **A user.** Everything they've posted and commented, up to 1000 of each.
-- **A subreddit.** The feed (new, hot, top, rising, or controversial), up to 1000 posts.
-- **A thread.** The original post plus every comment, with parent/child relationships preserved.
-- **Any mix.** Give it a file with `u/someone`, `r/somecommunity`, and thread URLs all mixed together.
+**The lightest scraper in this set. 40 lines of setup, 10x the speed of browser-based tools.**
+
+**If this saves you time, give it a star.**
+
+</div>
+
+---
+
+## Why this exists
+
+Most Reddit scrapers on GitHub are bloated. They spin up Playwright, require a Reddit dev account, wrap PRAW with 1000 lines of code. Reddit itself lets you add `.json` to any URL and returns structured data. So that's what this uses.
+
+No browser. No login. No API key. Just `requests`.
+
+## Quickstart
+
+```bash
+git clone https://github.com/mothivenkatesh/reddit-scraper.git
+cd reddit-scraper
+pip install -r requirements.txt
+
+python scrape.py --user spez
+python to_csv.py
+```
+
+30 seconds to first result. No account ceremony.
 
 ## What you can do with it
 
-- **Research what your users complain about.** Scrape `r/ProductManagement` or your specific niche community, run the output through Claude, ask "what are the top 10 pain points people mention?"
-- **Build an LLM fine-tuning dataset.** Comments and posts are good training data.
-- **Audit a creator or expert.** Pull a user's entire history and see what they actually care about.
-- **Track sentiment on a thread.** Full comment trees make this easy.
-- **Monitor competitor mentions.** Scrape a subreddit feed once a week, diff the results.
+| Use case | What to run | What you get |
+|---|---|---|
+| **Audit what an expert actually thinks** | `python scrape.py --user paulg` | Every post and comment they've made, up to 1000 each |
+| **Voice-of-audience for a niche** | `python scrape.py --subreddit ProductManagement --sort top --max 1000` | Top posts in a community, sortable by score |
+| **Map a full thread discussion** | `python scrape.py --thread <URL>` | Post + every comment, with parent/child threading preserved |
+| **Build an LLM fine-tuning dataset** | `python scrape.py --file targets.txt --max 1000` | Thousands of real posts and comments |
+| **Monitor competitor mentions** | Re-run weekly, diff the CSVs | New posts that reference a competitor |
+| **Theme extraction at scale** | Scrape + feed to Claude | "Top 10 complaints in r/SaaS last month" |
+| **Track sentiment on a launch** | Scrape the launch thread | Full comment tree to run sentiment on |
 
-## What you need first
+## Sample output
 
-1. **Python 3.10 or newer.** Check in Terminal (Mac) or PowerShell (Windows):
-   ```
-   python --version
-   ```
-   Install from [python.org](https://www.python.org/downloads/) if it's missing. On Windows, tick "Add Python to PATH".
+```json
+{
+  "user": "spez",
+  "scraped_at": "2026-04-22T08:15:00Z",
+  "submissions": [
+    {
+      "id": "abc123",
+      "title": "An update on our API changes",
+      "selftext": "Last month we announced...",
+      "subreddit": "reddit",
+      "score": 1247,
+      "num_comments": 892,
+      "created_utc": 1713782400,
+      "permalink": "/r/reddit/comments/abc123/...",
+      "url": "https://reddit.com/r/reddit/comments/abc123/..."
+    }
+  ],
+  "comments": [
+    {
+      "id": "def456",
+      "parent_id": "t1_xyz789",
+      "author": "spez",
+      "body": "Thanks for the feedback...",
+      "score": 42,
+      "created_utc": 1713785000,
+      "permalink": "...",
+      "depth": 2
+    }
+  ]
+}
+```
 
-2. That's it. No browser install. No Reddit account. No API keys.
+## How it compares
 
-## Step 1. Download this repo
+|  | reddit-scraper | PRAW | PushShift | Browser scraper |
+|---|---|---|---|---|
+| Needs Reddit dev account | No | Yes | No | No |
+| Needs API keys | No | Yes | No | No |
+| Install in 1 command | Yes | Yes | Yes | No |
+| Installs a browser | No | No | No | Yes |
+| Speed | Fast | Fast | Fast | Slow |
+| Max items per listing | 1000 (Reddit cap) | 1000 (same cap) | Unlimited (archive) | 1000 |
+| Deep history (pre-2020) | No | No | Yes | No |
+| Gets "load more" collapsed comments | No | Yes | No | Sometimes |
+| Best for | Fast research | Production apps | Historical research | Nothing, use this instead |
 
-Green **Code** button at the top, **Download ZIP**, unzip it. Or:
+## Who this is for
+
+- **Product managers** mining user research from community forums
+- **Content strategists** finding what a niche actually talks about
+- **Founders** validating ICP language before writing copy
+- **Researchers** building corpora for sentiment, classification, topic modeling
+- **Growth operators** tracking competitor or category conversation
+
+## Setup walkthrough (for non-developers)
+
+### 1. Python
+
+```
+python --version
+```
+
+Install 3.10+ from [python.org](https://www.python.org/downloads/) if missing. On Windows, tick "Add Python to PATH".
+
+### 2. Install
 
 ```
 git clone https://github.com/mothivenkatesh/reddit-scraper.git
 cd reddit-scraper
-```
-
-## Step 2. Install the one dependency
-
-```
 pip install -r requirements.txt
 ```
 
-That's it. It only uses `requests` (a standard Python library).
+Only dependency is `requests`. No browser engine, no Playwright.
 
-## Step 3. Run it
+### 3. Run it
 
-### Scrape one user's full history
-
+**One user's full history:**
 ```
 python scrape.py --user spez
 ```
 
-Pulls their last 500 submissions and 500 comments. To get fewer or more, add `--max 100` or `--max 1000`.
-
-### Scrape multiple users
-
+**Multiple users:**
 ```
 python scrape.py --users spez,kn0thing,paulg
 ```
 
-### Scrape a subreddit feed
-
+**Subreddit feed** (sort options: `new`, `hot`, `top`, `rising`, `controversial`):
 ```
-python scrape.py --subreddit indianstartups --sort new --max 500
-```
-
-Sort options: `new`, `hot`, `top`, `rising`, `controversial`.
-
-### Scrape a specific thread with all its comments
-
-Copy the thread URL from Reddit:
-
-```
-python scrape.py --thread https://www.reddit.com/r/SaaS/comments/abc123/some-title/
+python scrape.py --subreddit ProductManagement --sort top --max 1000
 ```
 
-You get the original post and every comment, flattened into a list. Each comment has a `depth` and `parent_id` so you can still see the conversation structure.
+**Single thread with full comment tree:**
+```
+python scrape.py --thread https://www.reddit.com/r/SaaS/comments/abc123/title/
+```
 
-### Scrape a mixed batch from a file
-
-Make `targets.txt` with one target per line. The scraper figures out what each one is from the prefix:
-
+**Mixed batch from a file** - the tool auto-detects each target type by prefix:
 ```
 u/spez
 u/naval
 r/SaaS
 r/ProductManagement
 https://www.reddit.com/r/startups/comments/abc/title/
-# Lines starting with # are ignored
 ```
-
-Then:
 
 ```
 python scrape.py --file targets.txt --sort new --max 500
 ```
 
-## Step 4. Get a spreadsheet
-
-After scraping:
+### 4. Flatten to a spreadsheet
 
 ```
 python to_csv.py
 ```
 
-Writes `reddit-scrape/all.csv`. One row per post or comment, with a `kind` column so you can filter. Columns for author, subreddit, title, body, score, timestamp, permalink, and thread depth for comments.
+Writes `reddit-scrape/all.csv`. Each row has a `kind` column (`submission` or `comment`) so you can filter. Comments carry `depth` and `parent_id` so you can reconstruct thread structure.
 
-## Where everything goes
+## Where everything lands
 
 ```
 reddit-scrape/
@@ -121,36 +182,55 @@ reddit-scrape/
   all.csv
 ```
 
-Delete the folder to start clean.
-
 ## Limits worth knowing
 
-- **Reddit caps listings at 1000 items.** Even if you say `--max 5000`, Reddit's pagination stops at 1000. To go deeper into a user's or subreddit's history, you'd need [Pushshift](https://github.com/pushshift/api) or the official Reddit API via [PRAW](https://praw.readthedocs.io/).
+- **Reddit caps listings at 1000 items.** Hard limit for `after=` pagination. For deeper history use Pushshift.
+- **~60 requests/minute** from a single unauthenticated IP. The tool waits 1.5 seconds between requests (~40/min) to stay polite.
+- **"Load more" placeholders** in long threads are skipped. To expand them you'd need PRAW.
+- **Deleted users and subreddits** return 404. The tool logs and moves on.
 
-- **Rate limits.** Reddit allows about 60 requests per minute from a single IP, unauthenticated. The tool waits 1.5 seconds between requests (~40/min) to stay polite. If you hit a 429, it waits 5-15 seconds and retries. After three fails, it moves on.
+## FAQ
 
-- **"Load more" in long threads.** If a thread has hundreds of comments, Reddit collapses some into "load more" placeholders. The scraper currently skips these. To expand them, you'd need to follow them recursively (PRAW does this automatically).
+**Do I need a Reddit account?**  
+No. The public JSON endpoints work unauthenticated.
 
-## When it breaks
+**Is this legal?**  
+Reading Reddit's public JSON is explicitly supported behavior (their own docs mention adding `.json` to any URL). Content is user-generated and CC-licensed by default. Don't redistribute user handles in a creepy way. For commercial scale use PRAW with a registered app.
 
-| You see | What happened | What to do |
-|---------|---------------|------------|
-| `404` for a user | Account deleted or banned | Normal. Move on. |
-| `404` for a subreddit | Private, banned, or doesn't exist | Normal. Move on. |
-| `429` repeating | Reddit is throttling you | Wait 10 minutes, run again |
-| `ModuleNotFoundError: requests` | You skipped Step 2 | Re-run `pip install -r requirements.txt` |
-| Fewer than 1000 items when you expected 1000 | You hit Reddit's real end, or a deleted account | Check the user's profile manually |
+**Why no PRAW?**  
+PRAW is great for production apps but requires a Reddit developer account with OAuth credentials. That's overkill for a quick research scrape. This tool is for the 90% of cases where you just want the data fast.
+
+**Can I get more than 1000 items per user?**  
+No. Reddit's own pagination stops there. For deeper history use [Pushshift](https://github.com/pushshift/api).
+
+**Does it get comments from inside `more` placeholders?**  
+No. Reddit collapses some comments into "load more" links that require individual requests to expand. If you need complete comment trees, PRAW does this automatically.
+
+**Can I run this on a schedule?**  
+Yes. Cron (Mac/Linux) or Task Scheduler (Windows). Pair with a diff tool to spot new posts.
+
+**Does it work for NSFW subreddits?**  
+Yes, same endpoint. Reddit's unauthenticated API doesn't filter NSFW by default.
 
 ## For Claude Code users
 
-Drop this folder into `~/.claude/skills/reddit-scraper/` and you get a slash command: `/reddit-scrape user spez`, `/reddit-scrape subreddit SaaS`, etc. See `SKILL.md` for details.
+Drop this folder into `~/.claude/skills/reddit-scraper/`. You get `/reddit-scrape user <u>`, `/reddit-scrape subreddit <name>`, `/reddit-scrape thread <url>`. See `SKILL.md`.
 
-## Legal
+## Related projects
 
-Reddit content is user-generated and CC-licensed by default. Reading the public JSON feed is explicitly supported by Reddit (adding `.json` to any URL is documented behavior). Reasonable research, LLM training, and analytics are fine.
+- [twitter-scraper](https://github.com/mothivenkatesh/twitter-scraper) - same spirit, for X/Twitter
+- [review-scraper](https://github.com/mothivenkatesh/review-scraper) - G2 product reviews and Clutch agency reviews
 
-Don't redistribute user content as your own. Don't dump scraped data publicly with user handles attached. For commercial production use, use the [official Reddit API via PRAW](https://praw.readthedocs.io/) which gives you 1000 requests per hour with a free registered app.
+## License
 
-## Why no Scrapling or Playwright?
+[MIT](LICENSE). Use it, fork it, ship it.
 
-Reddit's public JSON endpoints return structured data without login or anti-bot. Using a browser here would be 10x slower for zero benefit. This tool is deliberately lightweight.
+---
+
+<div align="center">
+
+**If this saved you time, star the repo. It genuinely helps.**
+
+[Report a bug](https://github.com/mothivenkatesh/reddit-scraper/issues) · [Request a feature](https://github.com/mothivenkatesh/reddit-scraper/issues) · [Follow me on X](https://x.com/mothivenkatesh)
+
+</div>
